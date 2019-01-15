@@ -25,7 +25,6 @@ class PintoLogger {
             ConsoleSingleton::Instance().observe(&dataPath);
             
             //retarget console is handled by implrementing mbed_override_console in the global space
-
         } 
         void set_ready(bool ready) { 
             if (ready && !this.ready){

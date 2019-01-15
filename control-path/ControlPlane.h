@@ -1,9 +1,10 @@
 #ifndef __PINTO_CONTROLPLANE_H_
 #define __PINTO_CONTROLPLANE_H_
 
-#include <cstdint>
+#include <stdint.h>
 #include "TraceModeSingleton.h"
 #include "MbedCloudClient.h"
+#include "mbed.h"
 
 //TODO move tracing object into own class
 class ControlPlane {

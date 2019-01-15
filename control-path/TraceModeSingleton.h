@@ -1,6 +1,7 @@
 #ifndef __PINTO_TRACEMODESINGLETON_H_
 #define __PINTO_TRACEMODESINGLETON_H_
-#include <cstdint>
+#include <stdint.h>
+#include "mbed_trace.h"
 
 class TraceModeSingleton {
     public:

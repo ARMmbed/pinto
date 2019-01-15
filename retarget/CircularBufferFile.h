@@ -2,8 +2,9 @@
 #define CIRCULAR_BUFFER_FILE_H
 #include "platform/platform.h"
 #include "platform/FileHandle.h"
-#include "CircularBufferFile.h"
+#include "CircularLogBuffer.h"
 #include "platform/PlatformMutex.h"
+#include "Observable.h"
 
 namespace mbed {
 class CircularBufferFile : public FileHandle {

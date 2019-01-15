@@ -45,10 +45,10 @@ void CircularBufferFile::api_unlock(void)
 
 void CircularBufferFile::observe(Observable* observer)
 {
-    this.observer = observer;
+    this->observer = observer;
 }
 
-void notify_observer_full(void* data, size_t size) {
+void CircularBufferFile::notify_observer_full(void* data, size_t size) {
     if (observer != NULL)
         observer->notify(data, size);
 }
@@ -61,7 +61,7 @@ ssize_t CircularBufferFile::write(const void* buffer, size_t size) {
     uint16_t my_seqno = core_util_atomic_incr_u16(&seqno, 1);
     //Make sure to notify after time is set
     if (!_buffer.has_space(size + 51)) { // conservative
-        notify_observer(_buffer.data(), _buffer.size());
+        notify_observer_full(_buffer.data(), _buffer.size());
         _buffer.reset();
     }
     int time_i;
@@ -90,7 +90,7 @@ ssize_t CircularBufferFile::write(const void* buffer, size_t size) {
     // Be safe and add another \0
     //_buffer.push(0);
     api_unlock();
-    size_t data_written = (time_i + seq_i+ 3 + size) % CIRCULAR_BUFFER_FILE_DEPTH;
+    size_t data_written = (time_i + seq_i+ 3 + size) % MBED_CONF_PINTO_CIRCULAR_BUFFER_FILE_DEPTH;
     return data_written;
 }
 

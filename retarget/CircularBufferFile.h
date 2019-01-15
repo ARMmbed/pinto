@@ -2,17 +2,13 @@
 #define CIRCULAR_BUFFER_FILE_H
 #include "platform/platform.h"
 #include "platform/FileHandle.h"
-#include "platform/CircularBuffer.h"
+#include "CircularBufferFile.h"
 #include "platform/PlatformMutex.h"
-
-
-#ifndef CIRCULAR_BUFFER_FILE_DEPTH
-#define CIRCULAR_BUFFER_FILE_DEPTH 512
-#endif
 
 namespace mbed {
 class CircularBufferFile : public FileHandle {
 public:
+    CircularBufferFile();
     virtual ~CircularBufferFile();
     virtual ssize_t write(const void *buffer, size_t size);
     virtual ssize_t read(void *buffer, size_t size);
@@ -20,6 +16,8 @@ public:
     virtual off_t size();
     virtual int isatty();
     virtual int close();
+    void observe(Observable* observer);
+    void notify_observer_full(void* data, size_t size);
 private:
     /** Acquire mutex */
     virtual void api_lock(void);
@@ -29,9 +27,10 @@ private:
     
     void wait_ms(uint32_t millisec);
 private:
-    CircularLogBuffer<char, CIRCULAR_BUFFER_FILE_DEPTH> _buffer;
+    CircularLogBuffer<char, MBED_CONF_PINTO_CIRCULAR_BUFFER_FILE_DEPTH> _buffer;
     //Callback<void()> _sigio_cb; // Todo
     PlatformMutex _mutex;
+    Observable* observer;
 };
 
 }

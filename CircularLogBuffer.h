@@ -162,6 +162,7 @@ public:
     }
     //WHY THE F@#$ does cloud require T* and not const T* for a writer
     T* data(void) { return _pool; }
+    bool has_space(size_t res) const { return (res + size()) < BufferSize; }
 
     
 private:

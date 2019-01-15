@@ -1,0 +1,13 @@
+{
+    "name": "pinto",
+    "config": {
+        "enable": {
+            "help": "Enable the pinto logger",
+            "value": true
+        },
+        "circular_buffer-file-depth": {
+            "help": "Set the Pinto internal circular buffer file size",
+            "value": 512
+        }
+    }
+}

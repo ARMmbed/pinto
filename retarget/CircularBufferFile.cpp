@@ -12,6 +12,7 @@
 #include <time.h>
 
 using namespace mbed;
+CircularBufferFile::CircularBufferFile() : observer(NULL) {}
 
 off_t CircularBufferFile::seek(off_t offset, int whence = SEEK_SET)
 {
@@ -42,12 +43,27 @@ void CircularBufferFile::api_unlock(void)
     _mutex.unlock();
 }
 
+void CircularBufferFile::observe(Observable* observer)
+{
+    this.observer = observer;
+}
+
+void notify_observer_full(void* data, size_t size) {
+    if (observer != NULL)
+        observer->notify(data, size);
+}
+
 ssize_t CircularBufferFile::write(const void* buffer, size_t size) {
     static volatile uint16_t seqno = 0;
     const char* b = static_cast<const char*>(buffer);
     static char time_buffer[33];
     time_t current_time = time(NULL);
     uint16_t my_seqno = core_util_atomic_incr_u16(&seqno, 1);
+    //Make sure to notify after time is set
+    if (!_buffer.has_space(size + 51)) { // conservative
+        notify_observer(_buffer.data(), _buffer.size());
+        _buffer.reset();
+    }
     int time_i;
     int seq_i;
     if (size == 0) {

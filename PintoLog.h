@@ -33,6 +33,7 @@ class PintoLogger {
             this.ready = ready; 
         }
         bool is_ready() const { return ready; }
+        void init_data_path(void* client) { dataPath.init(client); }
 
     private:
         bool ready;

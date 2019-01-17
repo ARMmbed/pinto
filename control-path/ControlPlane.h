@@ -10,7 +10,7 @@
 class ControlPlane {
     private:
         void initialize_trace(void);
-        void remote_trace_mode_update_cb(void* data);
+        void remote_trace_mode_update_cb(const char* data);
         uint8_t parse_trace_mode(char x);
 
     public:

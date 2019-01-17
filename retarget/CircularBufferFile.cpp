@@ -12,7 +12,10 @@
 #include <time.h>
 
 using namespace mbed;
-CircularBufferFile::CircularBufferFile() : observer(NULL) {}
+CircularBufferFile::CircularBufferFile() : observer(NULL), _call_id(0){
+    t.start(callback(&q, &EventQueue::dispatch_forever));
+
+}
 
 off_t CircularBufferFile::seek(off_t offset, int whence = SEEK_SET)
 {
@@ -53,6 +56,17 @@ void CircularBufferFile::notify_observer_full(void* data, size_t size) {
         observer->notify(data, size);
 }
 
+void CircularBufferFile::notify_observer_timeout() {
+    //This needs to lock
+    api_lock();
+    if (observer != NULL && _buffer.size() != 0)
+    {
+        observer->notify(_buffer.data(), _buffer.size());
+        _buffer.reset();
+    }
+    api_unlock();
+}
+
 ssize_t CircularBufferFile::write(const void* buffer, size_t size) {
     static volatile uint16_t seqno = 0;
     const char* b = static_cast<const char*>(buffer);
@@ -69,6 +83,11 @@ ssize_t CircularBufferFile::write(const void* buffer, size_t size) {
     if (size == 0) {
         return 0;
     }
+    if(_call_id != 0)
+        q.cancel(_call_id); //reset any in flight timeout event
+    //TODO make this a parameter
+    _call_id = q.call_in(2000, this, &CircularBufferFile::notify_observer_timeout);
+
     api_lock();
     itoa(current_time, time_buffer, 16);
     _buffer.push('[');

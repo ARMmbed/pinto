@@ -5,6 +5,7 @@
 #include "CircularLogBuffer.h"
 #include "platform/PlatformMutex.h"
 #include "Observable.h"
+#include "mbed.h"
 
 namespace mbed {
 class CircularBufferFile : public FileHandle {
@@ -19,6 +20,7 @@ public:
     virtual int close();
     void observe(Observable* observer);
     void notify_observer_full(void* data, size_t size);
+    void notify_observer_timeout(void);
 private:
     /** Acquire mutex */
     virtual void api_lock(void);
@@ -32,6 +34,9 @@ private:
     //Callback<void()> _sigio_cb; // Todo
     PlatformMutex _mutex;
     Observable* observer;
+    int _call_id;
+    EventQueue q;
+    Thread t;
 };
 
 }

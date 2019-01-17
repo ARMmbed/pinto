@@ -15,9 +15,11 @@ class DataPath : public Observable {
         DataPath(DataPathWriteObject<WriteObject>* writer): writer(writer), ready(false), pc(USBTX, USBRX, 115200){}
         // Would make this const, but cloud client doesnt like const correctness
         size_t write(void * data, size_t len){
+            size_t len_written = 0;
             // Dont over trace
             mbed_trace_config_set(TRACE_ACTIVE_LEVEL_NONE);
-            size_t len_written = writer->write(data, len);
+            if (is_ready())
+                len_written = writer->write(data, len);
             mbed_trace_config_set(trace_mode);
             //pc.puts(static_cast<char*>(data));
             pc.write(static_cast<uint8_t*>(data), len, NULL);
@@ -26,6 +28,7 @@ class DataPath : public Observable {
         virtual size_t notify(void* data, size_t len) { return write(data, len); }
         void init(void* client) { writer->init(client); ready = true; }
         bool is_ready() const { return ready; }
+        void set_ready(bool ready) { this->ready = ready; }
 
     private:
         DataPathWriteObject<WriteObject> *const writer;

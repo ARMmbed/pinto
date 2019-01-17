@@ -64,13 +64,15 @@ void ControlPlane::remote_trace_mode_update_cb(void* data) {
 
 ControlPlane::ControlPlane(MbedCloudClient*const cloudClient) : cloudClient(cloudClient) {
     initialize_trace();
+}
 
+void ControlPlane::init_in_cloud(void) {
     M2MObject* pinto_control_object = M2MInterfaceFactory::create_object("26250");
     M2MObjectInstance* pinto_control_i = pinto_control_object->create_object_instance();
     trace_res = pinto_control_i->create_dynamic_resource("4015", "tracing", M2MResourceBase::STRING, false);
-    trace_res->set_operation(M2MBase::PUT_POST_ALLOWED);
+    trace_res->set_operation(M2MBase::POST_ALLOWED);
     trace_res->set_execute_function(execute_callback(this, &ControlPlane::remote_trace_mode_update_cb));
-
+    
     M2MObjectList obj_list;
     obj_list.push_back(pinto_control_object);
     cloudClient->add_objects(obj_list);

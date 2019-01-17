@@ -15,6 +15,7 @@ class ControlPlane {
 
     public:
         ControlPlane(MbedCloudClient*const cloudClient);
+        void init_in_cloud(void);
 
     private:
         TraceModeSingleton trace_mode;

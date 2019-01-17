@@ -19,7 +19,8 @@ class PintoLogger {
         }
 
     public:
-        PintoLogger(MbedCloudClient*const cloudClient): ready(false), cloudClient(cloudClient), controlPlane(cloudClient) {
+        PintoLogger(MbedCloudClient*const cloudClient): ready(false), cloudClient(cloudClient), controlPlane(cloudClient) 
+        {
             //Hook in data path to console retarget
             //console.observe(&dataPath);
             ConsoleSingleton::Instance().observe(&dataPath);
@@ -27,13 +28,18 @@ class PintoLogger {
             //retarget console is handled by implrementing mbed_override_console in the global space
         } 
         void set_ready(bool ready) { 
-            if (ready && !this.ready){
+            if (ready && !this->ready){
                 //push_any_faults
             }
-            this.ready = ready; 
+            this->ready = ready; 
         }
         bool is_ready() const { return ready; }
-        void init_data_path(void* client) { dataPath.init(client); }
+
+        // CloudClient may not be consructed until later, therefore postpone init.
+        void init_remote_paths(void* client) { 
+            controlPlane.init_in_cloud();
+            dataPath.init(client); 
+        }
 
     private:
         bool ready;

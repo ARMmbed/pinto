@@ -22,7 +22,13 @@ class Writer : public WriterInterface {
     public:
         virtual ~Writer() {}
         Writer(WriteObject* writer) : writer(writer) {}
-        size_t write(const void* data, size_t len) { return writer->write(data, len); } // Default
+        Writer(): writer(NULL) {}
+        size_t write(const void* data, size_t len) { 
+            if (writer)
+                return writer->write(data, len); 
+            else 
+                return -1;
+        } // Default
 
     private:
         WriteObject* writer;
@@ -30,7 +36,7 @@ class Writer : public WriterInterface {
 
 template <> class Writer<M2MResource> : public WriterInterface {
     public:
-        Writer(M2MResource* writer) : writer(writer) {}
+        //Writer(M2MResource* writer) : writer(writer) {}
         size_t write(const void* data, size_t len) { return writer->set_value(static_cast<const uint8_t*>(data), len);}
 
         /**

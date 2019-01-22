@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include "MbedCloudClient.h"
+#include "mbed.h"
 
 class WriterInterface {
     public:
@@ -21,12 +22,15 @@ class WriterInterface {
  * Write Object must have a write method
  *
  */
-template <class WriteObject> 
+template <class WriteObject>
 class Writer : public WriterInterface {
     public:
-        virtual ~Writer() {}
-        Writer(WriteObject* writer) : writer(writer) {}
-        Writer(): writer(NULL) {}
+        virtual ~Writer() {
+            if (writer)
+                delete writer;
+        }
+        //Writer(WriteObject* writer) : writer(writer) {}
+        Writer(): writer(new Writer) {}
         size_t write(const void* data, size_t len) { 
             if (writer)
                 return writer->write(data, len); 
@@ -44,6 +48,7 @@ class Writer : public WriterInterface {
  */
 template <> class Writer<M2MResource> : public WriterInterface {
     public:
+        virtual ~Writer() {};
         //Writer(M2MResource* writer) : writer(writer) {}
         size_t write(const void* data, size_t len) { return writer->set_value(static_cast<const uint8_t*>(data), len);}
 
@@ -65,6 +70,19 @@ template <> class Writer<M2MResource> : public WriterInterface {
     private:
         M2MResource* writer;
         MbedCloudClient* cloudClient;
+
+};
+
+/** Serial writer for debug mode
+ */
+template <> class Writer<Serial> : public WriterInterface {
+    public:
+        virtual ~Writer() {}
+        Writer(): pc(USBTX, USBRX, 115200) {}
+        size_t write(const void* data, size_t len) { return pc.write(static_cast<const uint8_t*>(data), len, NULL); }
+
+    private:
+        Serial pc;
 
 };
 

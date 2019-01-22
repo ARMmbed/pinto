@@ -5,8 +5,15 @@
 #include "TraceModeSingleton.h"
 #include "mbed.h"
 
-// DataPathWriteObject must has a ->write call
-// This class is only outbound to network
+/** \addtogroup datapath
+ *
+ *  @{
+ */
+/**
+ * Private DataPath object handles the routing from stdout/error console to remote.
+ * DataPathWriteObject must has a ->write call
+ * This class is only outbound to network
+ */
 template <class WriteObject, template<class> class DataPathWriteObject=Writer> 
 class DataPath : public Observable {
     public:
@@ -14,6 +21,9 @@ class DataPath : public Observable {
         ~DataPath() { delete writer; }
         DataPath(DataPathWriteObject<WriteObject>* writer): writer(writer), ready(false), pc(USBTX, USBRX, 115200){}
         // Would make this const, but cloud client doesnt like const correctness
+        /** Write data to WriteObjects
+         *  Disable mbed trace temporarily to prevent forkbomb-esque logging.
+         */
         size_t write(void * data, size_t len){
             size_t len_written = 0;
             // Dont over trace
@@ -25,8 +35,19 @@ class DataPath : public Observable {
             pc.write(static_cast<uint8_t*>(data), len, NULL);
             return len_written;
         }
+        /** Callback for observer pattern.  
+         *
+         * @param data Raw data to write
+         * @param len Number of bytes to write
+         * @return number of bytes written
+         */
         virtual size_t notify(void* data, size_t len) { return write(data, len); }
-        void init(void* client) { writer->init(client); ready = true; }
+        
+        /** Register optional client into data path
+         *
+         * @param client Raw pointer to client instance
+         */
+        virtual void init(void* client) { writer->init(client); ready = true; }
         bool is_ready() const { return ready; }
         void set_ready(bool ready) { this->ready = ready; }
 
@@ -37,6 +58,8 @@ class DataPath : public Observable {
         Serial pc;
 };
 
+/** @}
+*/
 //template <class WriteObject>
 //size_t DataPath<WriteObject>::write(void * data, size_t len) 
 //{ 

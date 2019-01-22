@@ -18,41 +18,41 @@ extern mbed_error_ctx error_ctx;
 extern mbed_fault_context_t fault_ctx;
 
 
+/** \addtogroup public_logger_interface
+ *
+ *  @{
+ */
+
+/** Class used for automatically forwarding all writes to stdout/stderr and forwarding them to a remote endpoint.
+*/
 template <class WriteObject>
 class PintoLogger {
     private:
-        PintoLogger() : ready(false) {}
-        void log_now(void* data, size_t len) { dataPath.write(data, len); }
+        PintoLogger();
+        void log_now(void* data, size_t len);
         void push_any_faults(char* buffer, int buf_size);
-        void check_for_fault_start(){
-            size_t buf_size = 64;
-            char* buffer = new char[64];
-            push_any_faults(buffer, buf_size);
-            delete[] buffer;
-        }
+        /** If any faults occur at program initialization immediately forward on communication ready
+         */
+        void check_for_fault_start();
 
     public:
-        PintoLogger(MbedCloudClient*const cloudClient): ready(false), cloudClient(cloudClient), controlPlane(cloudClient) 
-        {
-            //Hook in data path to console retarget
-            //console.observe(&dataPath);
-            ConsoleSingleton::Instance().observe(&dataPath);
-            
-            //retarget console is handled by implrementing mbed_override_console in the global space
-        } 
-        void set_ready(bool ready) { 
-            if (ready && !this->ready){
-                //push_any_faults
-            }
-            this->ready = ready; 
-        }
-        bool is_ready() const { return ready; }
 
-        // CloudClient may not be consructed until later, therefore postpone init.
-        void init_remote_paths(void* client) { 
-            controlPlane.init_in_cloud();
-            dataPath.init(client); 
-        }
+        PintoLogger(MbedCloudClient*const cloudClient);
+        /** 
+         * Setter for Control/Dataplane ready
+         *
+         * @param ready system ready for remote logging flag
+         */
+        void set_ready(bool ready);
+        bool is_ready() const ;
+        /**
+         * Initialize Control Plane and Data Plane
+         * CloudClient and DataPath client  may not be constructed until later, therefore postpone init.
+         *
+         * @param client  (Optional) A pointer to client object to register in the datapath. It is assumed the DataPath/DataPathWriters know how to handle this.
+         *
+         */
+        void init_remote_paths(void* client);
 
     private:
         bool ready;
@@ -61,6 +61,50 @@ class PintoLogger {
         DataPath<WriteObject> dataPath;
         ControlPlane controlPlane;
 };
+
+template <class T>
+PintoLogger<T>::PintoLogger(MbedCloudClient*const cloudClient): ready(false), cloudClient(cloudClient), controlPlane(cloudClient) 
+{
+    //Hook in data path to console retarget
+    //console.observe(&dataPath);
+    ConsoleSingleton::Instance().observe(&dataPath);
+
+    //retarget console is handled by implrementing mbed_override_console in the global space
+} 
+
+template <class T>
+void PintoLogger<T>::set_ready(bool ready) { 
+    if (ready && !this->ready){
+        //push_any_faults
+        check_for_fault_start();
+    }
+    this->ready = ready; 
+}
+
+template <class T>
+bool PintoLogger<T>::is_ready() const { return ready; }
+
+// CloudClient may not be consructed until later, therefore postpone init.
+template <class T>
+void PintoLogger<T>::init_remote_paths(void* client) { 
+    controlPlane.init_in_cloud();
+    dataPath.init(client); 
+}
+
+template <class T>
+PintoLogger<T>::PintoLogger() : ready(false) {}
+
+template <class T>
+void PintoLogger<T>::log_now(void* data, size_t len) { dataPath.write(data, len); }
+
+template <class T>
+void PintoLogger<T>::check_for_fault_start() {
+    size_t buf_size = 64;
+    char* buffer = new char[64];
+    push_any_faults(buffer, buf_size);
+    delete[] buffer;
+}
+
 
 // TODO turn these into sprintfs and write to cloud directly
 template <class T>
@@ -95,6 +139,11 @@ void PintoLogger<T>::push_any_faults(char* buffer, int buf_size) {
     mbed_reset_reboot_error_info();
 }
 
+/** }@
+ */
+
+/** Override Mbed Os error reboot handler to log failures. 
+*/
 void mbed_error_reboot_callback(mbed_error_ctx *error_context);
 
 #endif /*__PINTOLOG_H__*/

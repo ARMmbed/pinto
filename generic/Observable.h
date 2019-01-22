@@ -1,6 +1,9 @@
 #ifndef __PINTO_OBSERVABLE_H__
 #define __PINTO_OBSERVABLE_H__
 
+/** Base observable object
+ *
+ */
 class Observable {
     public:
         virtual ~Observable() {}

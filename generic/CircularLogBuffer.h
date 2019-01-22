@@ -21,10 +21,10 @@
 #include "platform/CircularBuffer.h"
 
 namespace mbed {
-/** \addtogroup platform */
+/** \addtogroup datapath */
 /** @{*/
 /**
- * \defgroup platform_CircularLogBuffer CircularLogBuffer functions
+ * \defgroup datapath_CircularLogBuffer CircularLogBuffer functions
  * @{
  */
 
@@ -155,6 +155,8 @@ public:
         return data_updated;
     }
 
+    /** Get internal state, use with caution
+     */
     void get_raw(CounterType& head, CounterType& tail, const T* data) const {
         head = _head;
         tail = _tail;

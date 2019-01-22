@@ -7,6 +7,9 @@ mbed_fault_context_t fault_ctx;
 //Retarget the console
 //TODO Wrap in an IFDEF
 #if MBED_CONF_PINTO_ENABLE
+/** Handle console retargeting to Pinto DataPath CircularBufferFile
+ *
+ */
 mbed::FileHandle *mbed::mbed_override_console(int fd){
     return &ConsoleSingleton::Instance();
 }

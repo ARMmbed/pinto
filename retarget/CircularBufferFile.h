@@ -7,7 +7,13 @@
 #include "Observable.h"
 #include "mbed.h"
 
+/** \addtogroup datapath
+ *  @{
+ */
 namespace mbed {
+    /** Internal Circular Buffer File class to act as retargeted console (STDOUT/STDERR)
+     *
+     */
 class CircularBufferFile : public FileHandle {
 public:
     CircularBufferFile();
@@ -18,6 +24,15 @@ public:
     virtual off_t size();
     virtual int isatty();
     virtual int close();
+
+    /** Register single observer on this console. 
+     *
+     * Will be notified on:
+     *  - Buffer full event
+     *  - timeout event
+     *
+     *  @param observer Object with a notify(data, len) method
+     */
     void observe(Observable* observer);
     void notify_observer_full(void* data, size_t size);
     void notify_observer_timeout(void);
@@ -40,4 +55,8 @@ private:
 };
 
 }
+
+/**
+ * }@
+ */
 #endif /* CIRCULAR_BUFFER_FILE_H */

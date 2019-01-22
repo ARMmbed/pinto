@@ -17,6 +17,10 @@ class WriterInterface {
 
 };
 
+/** Exposed selector class for specializing writers on a particular remote client
+ * Write Object must have a write method
+ *
+ */
 template <class WriteObject> 
 class Writer : public WriterInterface {
     public:
@@ -34,6 +38,10 @@ class Writer : public WriterInterface {
         WriteObject* writer;
 };
 
+/** Specialization of WriteInterface to handle Pelion LWM2M over coap as a data plane.
+ *  LWM2M objects do not have a default "write" method. For some reason it's call set_value
+ *
+ */
 template <> class Writer<M2MResource> : public WriterInterface {
     public:
         //Writer(M2MResource* writer) : writer(writer) {}

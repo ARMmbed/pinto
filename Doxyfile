@@ -1,0 +1,2 @@
+INPUT=control-path,data-path,generic,retarget,.
+GENERATE_LATEX=NO

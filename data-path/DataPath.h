@@ -17,7 +17,7 @@
 template <class WriteObject, template<class> class DataPathWriteObject=Writer> 
 class DataPath : public Observable {
     public:
-        DataPath(): writer(new DataPathWriteObject<WriteObject>()), ready(false) {}
+        DataPath(): writer(new DataPathWriteObject<WriteObject>()), ready(false), pc(USBTX, USBRX, 115200) {}
         ~DataPath() { delete writer; }
         //DataPath(DataPathWriteObject<WriteObject>* writer): writer(writer), ready(false){}
         // Would make this const, but cloud client doesnt like const correctness
@@ -31,7 +31,7 @@ class DataPath : public Observable {
             if (is_ready())
                 len_written = writer->write(data, len);
             mbed_trace_config_set(trace_mode);
-            //pc.puts(static_cast<char*>(data));
+            pc.puts(static_cast<char*>(data));
             return len_written;
         }
         /** Callback for observer pattern.  
@@ -54,6 +54,7 @@ class DataPath : public Observable {
         DataPathWriteObject<WriteObject> *const writer;
         TraceModeSingleton trace_mode;
         bool ready;
+        Serial pc;
 };
 
 /** @}

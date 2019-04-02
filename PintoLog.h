@@ -10,8 +10,9 @@
 #include "mbed_fault_handler.h"
 
 #define _CLOUD_LOG(buffer, buf_size, ...) \
-    snprintf(buffer, buf_size, __VA_ARGS__); \
-    log_now(buffer, strlen(buffer))
+    printf(__VA_ARGS__);
+    //snprintf(buffer, buf_size, __VA_ARGS__); \
+    //log_now(buffer, strlen(buffer))
 
 extern bool mbed_fault_occurred;
 extern mbed_error_ctx error_ctx;
@@ -75,6 +76,7 @@ PintoLogger<T>::PintoLogger(MbedCloudClient*const cloudClient): ready(false), cl
 template <class T>
 void PintoLogger<T>::set_ready(bool ready) { 
     if (ready && !this->ready){
+        dataPath.set_ready(true);
         //push_any_faults
         check_for_fault_start();
     }
@@ -123,7 +125,7 @@ void PintoLogger<T>::push_any_faults(char* buffer, int buf_size) {
         _CLOUD_LOG(buffer, buf_size, "e_status:[%lx]\ne_addr:[%lx]\ne_val:[%lx]\n", error_ctx.error_status, error_ctx.error_address, error_ctx.error_value);
         _CLOUD_LOG(buffer, buf_size, "t_id:[%lx]\nt_entry_addr:[%lx]\nt_stack_sz:[%lx]\n", error_ctx.thread_id, error_ctx.thread_entry_address, error_ctx.thread_stack_size);
         _CLOUD_LOG(buffer, buf_size, "t_stack_mem:[%lx]\nt_curr_sp:[%lx]\ne_rebt_cnt:[%lx]\n", error_ctx.thread_stack_mem, error_ctx.thread_current_sp, error_ctx.error_reboot_count);
-        log_now(error_ctx.error_filename, strlen(error_ctx.error_filename));
+        //log_now(error_ctx.error_filename, strlen(error_ctx.error_filename));
         _CLOUD_LOG(buffer, buf_size, "e_lineno:[%lx]\n", error_ctx.error_line_number);
 
         if(error_ctx.error_status == MBED_ERROR_HARDFAULT_EXCEPTION) {

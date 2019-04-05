@@ -26,7 +26,7 @@ extern mbed_fault_context_t fault_ctx;
 
 /** Class used for automatically forwarding all writes to stdout/stderr and forwarding them to a remote endpoint.
 */
-template <class WriteObject>
+template <class WriteObject, class CompressionEngine=DoNoCompression>
 class PintoLogger {
     private:
         PintoLogger();
@@ -59,12 +59,12 @@ class PintoLogger {
         bool ready;
         MbedCloudClient*const cloudClient;
         //ConsoleSingleton console;
-        DataPath<WriteObject> dataPath;
+        DataPath<WriteObject, CompressionEngine> dataPath;
         ControlPlane controlPlane;
 };
 
-template <class T>
-PintoLogger<T>::PintoLogger(MbedCloudClient*const cloudClient): ready(false), cloudClient(cloudClient), controlPlane(cloudClient) 
+template <class T, class Y>
+PintoLogger<T, Y>::PintoLogger(MbedCloudClient*const cloudClient): ready(false), cloudClient(cloudClient), controlPlane(cloudClient) 
 {
     //Hook in data path to console retarget
     //console.observe(&dataPath);
@@ -73,8 +73,8 @@ PintoLogger<T>::PintoLogger(MbedCloudClient*const cloudClient): ready(false), cl
     //retarget console is handled by implrementing mbed_override_console in the global space
 } 
 
-template <class T>
-void PintoLogger<T>::set_ready(bool ready) { 
+template <class T, class Y>
+void PintoLogger<T, Y>::set_ready(bool ready) { 
     if (ready && !this->ready){
         dataPath.set_ready(true);
         //push_any_faults
@@ -83,24 +83,24 @@ void PintoLogger<T>::set_ready(bool ready) {
     this->ready = ready; 
 }
 
-template <class T>
-bool PintoLogger<T>::is_ready() const { return ready; }
+template <class T, class Y>
+bool PintoLogger<T, Y>::is_ready() const { return ready; }
 
 // CloudClient may not be consructed until later, therefore postpone init.
-template <class T>
-void PintoLogger<T>::init_remote_paths(void* client) { 
+template <class T, class Y>
+void PintoLogger<T, Y>::init_remote_paths(void* client) { 
     controlPlane.init_in_cloud();
     dataPath.init(client); 
 }
 
-template <class T>
-PintoLogger<T>::PintoLogger() : ready(false) {}
+template <class T, class Y>
+PintoLogger<T, Y>::PintoLogger() : ready(false) {}
 
-template <class T>
-void PintoLogger<T>::log_now(void* data, size_t len) { dataPath.write(data, len); }
+template <class T, class Y>
+void PintoLogger<T, Y>::log_now(void* data, size_t len) { dataPath.write(data, len); }
 
-template <class T>
-void PintoLogger<T>::check_for_fault_start() {
+template <class T, class Y>
+void PintoLogger<T, Y>::check_for_fault_start() {
     size_t buf_size = 64;
     char* buffer = new char[64];
     push_any_faults(buffer, buf_size);
@@ -109,8 +109,8 @@ void PintoLogger<T>::check_for_fault_start() {
 
 
 // TODO turn these into sprintfs and write to cloud directly
-template <class T>
-void PintoLogger<T>::push_any_faults(char* buffer, int buf_size) {
+template <class T, class Y>
+void PintoLogger<T, Y>::push_any_faults(char* buffer, int buf_size) {
     if (!mbed_fault_occurred)
         return;
 
